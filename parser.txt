@@ -1,0 +1,294 @@
+function scheduleHtmlParser(table) {
+    //除函数名外都可编辑
+    //传入的参数为上一步函数获取到的html
+    //可使用正则匹配
+    //可使用解析dom匹配，工具内置了$，跟jquery使用方法一样，直接用就可以了，参考：https://juejin.im/post/5ea131f76fb9a03c8122d6b9
+    //以下为示例，您可以完全重写或在此基础上更改
+    let courseInfos = []
+    let courseId = ["","7A4A9FC9C7984CE2A4516C949A1B5B8E-",
+	   "8FBC4375C84D460FAC5174B19A97E6C8-",
+	   "8770A80687504D4DBEA0D4312A70934E-",
+	   "E0AEEAE2935D4B6C98C59FDFBB795861-",
+	   "31E4146D2B6C417A8B7AC2F8EA9EF644-",
+	   "C451FCDBBA11421FA2AB4D7B42DCD2C8-"]
+	let sectionTimes=[
+    	  {
+            section: 1,
+            startTime: "08:20",
+            endTime: "9:05"
+          },
+          {
+          	section: 2,
+            startTime: "9:15",
+            endTime: "10:00"
+          },
+          {
+            section: 3,
+            startTime: "10:20",
+            endTime: "11:05"
+          },
+          {
+           	section: 4,
+            startTime: "11:15",
+            endTime: "12:00"
+          },
+          {
+            section: 5,
+            startTime: "14:00",
+            endTime: "14:45"
+          },
+          {
+            section: 6,
+            startTime: "14:55",
+            endTime: "15:40"
+          },
+          {
+            section: 7,
+            startTime: "16:00",
+            endTime: "16:45"
+          },
+          {
+            section: 8,
+            startTime: "16:55",
+            endTime: "17:40"
+          },
+          {
+            section: 9,
+            startTime: "19:00",
+            endTime: "19:45"
+          },
+          {
+            section: 10,
+            startTime: "19:55",
+            endTime: "20:40"
+          },
+          {
+            section: 11,
+            startTime: "21:00",
+            endTime: "21:45"
+          },
+          {
+            section: 12,
+            startTime: "21:55",
+            endTime: "22:40"
+          }]
+
+
+	let weekDay = ["星期一","星期二","星期三","星期四","星期五","星期六","星期天",]
+//     let table = $('#kbtable')//bbb是所获取的课程表格
+    let tr = $('tr')//找到所有的tr子元素，其中1-6为第一讲到第六讲
+
+
+    for (let i=1;i<tr.length-1;i++) //其中i为对应的第几讲，即第几节课
+    {
+        let td=tr.eq(i).find('td')//每一讲中的七天情况
+        for (let j=0;j<td.length;j++)//对第i讲的第j天进行处理，每个根据id来划分
+        {
+
+            let nameId=courseId[i]+(j+1)+"-1"//获取课程名称对应的id
+            let tdId=courseId[i]+(j+1)+"-2"//获取课程信息对应的id
+            let tempCourse=$("#"+tdId)//id对应的课程
+            //判断有几个课程，根据$('#id').html().indexOf('---------------------')判断
+            if($("#"+nameId).html().indexOf('---------------------')!=-1)
+            {//多课程情况
+
+                let course_text=$("#"+tdId).html()
+                let result=[]
+				let course=course_text.split('---------------------<br>')//分割课程片段
+				let this_course=$("#"+tdId)
+				for(let k=0;k<course.length;k++)//对每一个片段进行处理
+				{
+					let eachCourseName=unescape(course[k].split('<br>')[0].replace(/&#x/g,'%u').replace(/;/g,''))
+//                     let eachCourseName="test"
+// 					let eachCourseName=DecodeUnicode(course[k].split('<br>')[0])//单独课程名称
+					let eachCourseTeacher=this_course.find('font').eq(3*k).text()
+					let eachCourseWeeks=get_weeks(this_course.find('font').eq(3*k+1).text())
+					let eachCoursePosition=this_course.find('font').eq(3*k+2).text()
+					let eachCourseDay=j+1
+					let eachCourseSection =[]
+					eachCourseSection.push(sectionTimes[2*i-2])
+					eachCourseSection.push(sectionTimes[2*i-1])
+					let eachCourse={
+						name:eachCourseName,
+						position:eachCoursePosition,
+						teacher:eachCourseTeacher,
+						weeks:eachCourseWeeks,
+						day:eachCourseDay,
+						sections:eachCourseSection
+					}
+// 					console.log(eachCourse)
+					courseInfos.push(eachCourse)
+				}
+
+            }
+            else{//单课程
+            	let courseName=get_class($("#"+nameId).html())//课程名称
+//                 let courseName="test2"
+            	if(courseName=="空白") continue;
+            	else{
+
+            		let coursePosition=get_position(tempCourse)//教室位置
+					let courseTeacher=get_teacher(tempCourse)//老师
+					let courseWeeks=get_weeks(tempCourse.find('font').eq(1).text())//获得课程所在周
+					let courseDay=j+1//星期几
+                    let section=[]
+                    section.push(sectionTimes[2*i-2])
+					section.push(sectionTimes[2*i-1])
+					let Course={
+						name: courseName,
+						position: coursePosition,
+						teacher: courseTeacher,
+						weeks:courseWeeks,
+						day: courseDay,
+						sections: section
+					}
+// 					console.log(Course)
+					courseInfos.push(Course)
+            	}
+            }
+        }
+    }
+
+
+//     console.log("{ \"courseInfos\":"+JSON.stringify(courseInfos)+",\"sectionTimes\":"+JSON.stringify(sectionTimes)+"}")
+    let jsonstr="{\"courseInfos\":"+JSON.stringify(courseInfos)+",\"sectionTimes\":"+JSON.stringify(sectionTimes)+"}"
+//     let jsonstr="{\"courseInfos\":"+JSON.stringify(courseInfos)+"}"
+    console.log(jsonstr)
+    return JSON.parse(jsonstr)
+}
+
+function get_class(text){//获得课程名
+    //仅处理单课程
+    if(text.indexOf(' ')!=-1)
+    {
+    	let str = text.split('<br>')[0]
+    	str = unescape(str.replace(/&#x/g,'%u').replace(/;/g,''))
+//     	str = DecodeUnicode(str)
+    	return str;
+    }
+    return "空白"
+}
+function get_position(Course){//获得教室
+    return Course.find('font').eq(2).text()
+}
+function get_teacher(Course){//获得老师名
+    return Course.find('font').eq(0).text()
+}
+function get_weeks(week_str){
+	/*
+	*周数共有两大种情况
+	    1.有逗号(分逗号部分处理)
+	        3,7,11,15(周)    仅有逗号，没有分号
+	             按逗号分开    3;7;11;15
+	             将每周存入    week={3;7;11;15}
+			3,7,10-13(周)或1-8,10-17(周)    有逗号，有分号
+			    按逗号分开    3;7;10-13
+			    for循环，对每串数据进行处理
+			        如果不包含-，为单独数据
+			        如果包含-{
+			        	按-分开
+			        	连续区间存入
+			        }
+            1-8,10-17(单周)
+
+	    2.无逗号(单部分处理)
+			1-8(周)
+			1-8(双周)
+
+	*/
+// 	let week_str="1-8,10-13(单周)"
+	let comma=week_str.indexOf(',')//判断有无逗号
+	let semicolon=week_str.indexOf('-')//判断有无分号
+	let dan=week_str.indexOf('(单周)')//单周
+	let shuang=week_str.indexOf('(双周)')//双周
+
+	let Weeks = []//存储最终结果
+
+	if(dan!=-1||shuang!=-1){//单周或者双周，删除掉后面的(x周)
+        week_str=week_str.substring(0,week_str.length-4)
+//         console.log("单双周：dan:"+dan+" shuang:"+shuang+" comma:"+comma+" semicolon:"+semicolon+"   result:"+week_str)
+    }else{//普通情况，删除掉后面的(周)
+        week_str=week_str.substring(0,week_str.length-3)
+//         console.log("单双周：dan:"+dan+" shuang:"+shuang+" comma:"+comma+" semicolon:"+semicolon+"   result:"+week_str)
+    }
+
+    if(comma!=-1)//有逗号
+    {
+        let commaParts=week_str.split(',')//按逗号分成几部分
+
+
+        for(let i=0;i<commaParts.length;i++)
+        {//对每部分进行处理
+        	if(commaParts[i].indexOf('-')!=-1)//有分号
+        	{
+        		let semicolonPartsInCommaParts=commaParts[i].split('-')
+                for (let j=Number(semicolonPartsInCommaParts[0]);j<=Number(semicolonPartsInCommaParts[1]);j++)
+                {
+                	if (dan!=-1)//单周
+                	{
+                		if(j%2!=0)
+                		{
+                			Weeks.push(j)
+                		}
+                	}
+                	else if(shuang!=-1)//双
+                	{
+                		if(j%2==0)
+                		{
+                			Weeks.push(j)
+                		}
+                	}
+                	else if(dan==-1&&shuang==-1)//普通周
+                	{
+                		Weeks.push(j)
+                	}
+                	
+                }
+        	}
+        	else{//没有分号，就是单独的周数
+        		Weeks.push(Number(commaParts[i]))
+        	}
+        }
+    }
+    else if(comma==-1&&semicolon!=-1){//没有逗号，仅有分号
+        let semicolonParts=week_str.split('-')
+        for (let i=Number(semicolonParts[0]);i<=Number(semicolonParts[1]);i++)
+                {
+                	if (dan!=-1)//单周
+                	{
+                		if(i%2!=0)
+                		{
+                			Weeks.push(i)
+                		}
+                	}
+                	else if(shuang!=-1)//双
+                	{
+                		if(i%2==0)
+                		{
+                			Weeks.push(i)
+                		}
+                	}
+                	else if(dan==-1&&shuang==-1)//普通周
+                	{
+                		Weeks.push(i)
+                	}
+                	
+                }
+    }
+    else{//仅有一周
+    	Weeks.push(Number(week_str))
+    }
+//     console.log(Weeks)
+    return Weeks
+}
+
+// function DecodeUnicode(start){
+// 	return HTMLDecode(start)
+// }
+// function HTMLDecode(text) { 
+//     var temp = document.createElement("div"); 
+//     temp.innerHTML = text; 
+//     var output = temp.innerText || temp.textContent; 
+//     temp = null; 
+//     return output; 
+// } 
