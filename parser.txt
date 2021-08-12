@@ -5,7 +5,12 @@ function scheduleHtmlParser(table) {
     //可使用解析dom匹配，工具内置了$，跟jquery使用方法一样，直接用就可以了，参考：https://juejin.im/post/5ea131f76fb9a03c8122d6b9
     //以下为示例，您可以完全重写或在此基础上更改
     let courseInfos = []
-    let courseId = [""]
+    let courseId = ["","7A4A9FC9C7984CE2A4516C949A1B5B8E-",
+	   "8FBC4375C84D460FAC5174B19A97E6C8-",
+	   "8770A80687504D4DBEA0D4312A70934E-",
+	   "E0AEEAE2935D4B6C98C59FDFBB795861-",
+	   "31E4146D2B6C417A8B7AC2F8EA9EF644-",
+	   "C451FCDBBA11421FA2AB4D7B42DCD2C8-"]
 	let sectionTimes=[
     	  {
             section: 1,
@@ -69,15 +74,6 @@ function scheduleHtmlParser(table) {
           }]
 
 
-    let allCourse = $('.kbcontent');
-    for(let i =0; i<6;i++){
-    	
-    	let idstr = allCourse[i*7].attribs.id;
-    	idstr = idstr.split("-")[0]+"-";
-//     	console.log(idstr);
-    	courseId.push(idstr);
-    }
-    console.log(courseId);
 	let weekDay = ["星期一","星期二","星期三","星期四","星期五","星期六","星期天",]
 //     let table = $('#kbtable')//bbb是所获取的课程表格
     let tr = $('tr')//找到所有的tr子元素，其中1-6为第一讲到第六讲
