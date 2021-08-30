@@ -9,62 +9,62 @@ function scheduleHtmlParser(table) {
   let courseId = [""]
   let sectionTimes=[
       {
-          section: 0,
+          section: 1,
           startTime: "08:20",
           endTime: "9:05"
         },
         {
-          section: 1,
+          section: 2,
           startTime: "9:15",
           endTime: "10:00"
         },
         {
-          section: 2,
+          section: 3,
           startTime: "10:20",
           endTime: "11:05"
         },
         {
-          section: 3,
+          section: 4,
           startTime: "11:15",
           endTime: "12:00"
         },
         {
-          section: 4,
+          section: 5,
           startTime: "14:00",
           endTime: "14:45"
         },
         {
-          section: 5,
+          section: 6,
           startTime: "14:55",
           endTime: "15:40"
         },
         {
-          section: 6,
+          section: 7,
           startTime: "16:00",
           endTime: "16:45"
         },
         {
-          section: 7,
+          section: 8,
           startTime: "16:55",
           endTime: "17:40"
         },
         {
-          section: 8,
+          section: 9,
           startTime: "19:00",
           endTime: "19:45"
         },
         {
-          section: 9,
+          section: 10,
           startTime: "19:55",
           endTime: "20:40"
         },
         {
-          section: 10,
+          section: 11,
           startTime: "21:00",
           endTime: "21:45"
         },
         {
-          section: 11,
+          section: 12,
           startTime: "21:55",
           endTime: "22:40"
         }]
@@ -82,7 +82,39 @@ function scheduleHtmlParser(table) {
   let weekDay = ["星期一","星期二","星期三","星期四","星期五","星期六","星期天",]
 
   let tr = $('tr')//找到所有的tr元素，其中1-6为第一讲到第六讲
+  
 
+
+  //test
+
+  
+//   let tempCourse=$("#A121E492E99B436282816D4CA2319393-5-2");
+//   let fonts = tempCourse.find("font");
+//   let num_eachCourse_attribs=[]
+//   let old_value=0;
+//   let new_value;
+//   let count=0;
+//   for(let i=0;i<fonts.length;i++){
+//     let attribs_name=fonts[i].attribs.title;
+//     new_value=get_value_of_attrib(attribs_name);
+//     if(i==fonts.length-1){
+//       num_eachCourse_attribs.push(count+1);
+//     }
+//     else if(new_value<old_value){
+//       num_eachCourse_attribs.push(count);
+//       count=1;
+//       old_value=0;
+//     }
+//     else{
+//       count+=1;
+//       old_value=new_value;
+//     }
+//   }
+
+
+
+
+  //test
 
 
   for (let i=1;i<tr.length-1;i++) //其中i为对应的第几讲，即第几节课
@@ -94,7 +126,32 @@ function scheduleHtmlParser(table) {
           let nameId=courseId[i]+(j+1)+"-1"//获取课程名称对应的id  id-1为缩小版视图对应的id
           let tdId=courseId[i]+(j+1)+"-2"//获取课程信息对应的id   id-2为放大版对应的id
           let tempCourse=$("#"+tdId)//id对应的课程
+
+
           let fonts = tempCourse.find("font");
+          let num_eachCourse_attribs=[]
+          let old_value=0;
+          let new_value;
+          let count=0;
+          for(let i=0;i<fonts.length;i++){
+            let attribs_name=fonts[i].attribs.title;
+            new_value=get_value_of_attrib(attribs_name);
+            if(i==fonts.length-1){
+              num_eachCourse_attribs.push(count+1);
+            }
+            else if(new_value<old_value){
+              num_eachCourse_attribs.push(count);
+              count=1;
+              old_value=0;
+            }
+            else{
+              count+=1;
+              old_value=new_value;
+            }
+          }
+
+
+
 
           //判断单课程还是多课程，分情况处理
           if($("#"+nameId).html().indexOf('---------------------')!=-1)
@@ -103,8 +160,7 @@ function scheduleHtmlParser(table) {
               let result=[]
               let course=course_text.split('---------------------<br>')//分割课程片段
 
-              let num_attribs = fonts.length/course.length;//每个课程的属性数
-
+              let sum=0;
               for(let k=0;k<course.length;k++)//对每一个片段进行处理 course.length为课程数
               {
                 //课程信息初始化
@@ -114,29 +170,34 @@ function scheduleHtmlParser(table) {
                 let eachCoursePosition=""
                 let eachCourseDay=j+1
                 let eachCourseSection =[]
+                let num_attribs=num_eachCourse_attribs[k];
 
-                for(let l=0;l<num_attribs;l++)//遍历属性  老师，周次，教室
+                
+                for(let l=0;l<num_attribs;l++)//遍历属性  老师，周次，教室,(组名)
                   {
-                  let attribs_name = fonts[k*num_attribs+l].attribs.title;
-                    switch (attribs_name){
-                      case '老师':{//老师名
-                        eachCourseTeacher = get_teacher(fonts[k*num_attribs+l]);
-                        break;
-                      }
-                      case '周次(节次)':{//周次
-                        eachCourseWeeks = get_weeks(fonts[k*num_attribs+l]);
-                        break;
-                      }
-                      case '教室':{//教室
-                        eachCoursePosition = get_position(fonts[k*num_attribs+l]);
-                        break;
-                      }
-                      default:{
-                        console.log("多课程情况下属性出错，错误属性："+attribs_name);
-                        break;
-                      }
+
+                  let attribs_name = fonts[sum+l].attribs.title;
+                  switch (attribs_name){
+                        case '老师':{//老师名
+                          eachCourseTeacher = get_teacher(fonts[l]);
+                          break;
+                        }
+                        case '周次(节次)':{//周次
+                          eachCourseWeeks = get_weeks(fonts[l]);
+                          break;
+                        }
+                        case '教室':{//教室
+                          eachCoursePosition = get_position(fonts[l]);
+                          break;
+                        }
+                        default:{
+                          console.log("多课程情况下属性多余，多余属性："+attribs_name + "\n 名称:"
+                                +eachCourseName +"\n 星期:"+eachCourseDay+"\n 第"+j+"讲");
+                          break;
+                        }
                     }
                   }
+                sum+=num_attribs;
                 //课程名
                 eachCourseName = unescape(course[k].split('<br>')[0].replace(/&#x/g,'%u').replace(/;/g,''));
                 //课程时间
@@ -169,7 +230,6 @@ function scheduleHtmlParser(table) {
               for(let l=0;l<num_attribs;l++)//遍历属性  老师，周次，教室
                   {
                   let attribs_name = fonts[l].attribs.title;
-//                   console.log("第"+i+"讲，星期"+j+","+attribs_name+":"+fonts[l].children[0].data);
                   switch (attribs_name){
                       case '老师':{//老师名
                         courseTeacher = get_teacher(fonts[l]);
@@ -184,7 +244,8 @@ function scheduleHtmlParser(table) {
                         break;
                       }
                       default:{
-                        console.log("单课程情况下属性出错，错误属性："+attribs_name);
+                        console.log("单课程情况下属性多余，多余属性："+attribs_name + "\n 名称:"
+                              +courseName +"\n 星期:"+courseDay+"\n 第"+j+"讲");
                         break;
                       }
                     }
@@ -207,6 +268,9 @@ function scheduleHtmlParser(table) {
       }
   }
 
+//Check
+// checking(courseInfos);
+//Check
 
 //     console.log("{ \"courseInfos\":"+JSON.stringify(courseInfos)+",\"sectionTimes\":"+JSON.stringify(sectionTimes)+"}")
   let jsonstr="{\"courseInfos\":"+JSON.stringify(courseInfos)+",\"sectionTimes\":"+JSON.stringify(sectionTimes)+"}"
@@ -214,6 +278,35 @@ function scheduleHtmlParser(table) {
 //     console.log(jsonstr)
   return JSON.parse(jsonstr)
 }
+
+function get_value_of_attrib(str){
+  let value=0;
+  switch(str){
+    case '老师':{//老师名
+        value=1;
+        break;
+    }
+    case '周次(节次)':{//周次
+        value=2;
+        break;
+    }
+    case '教室':{//教室
+        value=3;
+        break;
+    }
+    case '组名':{
+        value=4;
+        break;
+    }
+    default:{
+        value=0;
+        break;
+    }
+  }
+  return value;
+}
+
+
 
 function get_class(text){//获得课程名
   //仅处理单课程
@@ -339,4 +432,54 @@ if(dan!=-1||shuang!=-1){//单周或者双周，删除掉后面的(x周)
   return Weeks
 }
 
+function checking(courses){
+  console.log("开始验证：");
+  let Week=[0,0,0,0,0,0,0,0];//一周每天的节数
+  let Monday=0,Tuesday=0,Wednesday=0,Thursday=0,Friday=0,Saturday=0,Sunday=0;
+  for(let i=0;i<courses.length;i++){
+    Week[courses[i].day]+=1;
+  }
+  console.log("本次导入"+courses.length+"节课程。\n其中:\n周一"+Week[1]+"节\n周二"+Week[2]+"节\n周三"+Week[3]+"节\n周四"+Week[4]+"节\n周五"+Week[5]+"节\n周六"+Week[6]+"节\n周天"+Week[7]+"节")
+  //长度验证
+  for(let i=0;i<courses.length;i++){
+    let flag=0;
+    if(getStrLength(courses[i].name)>40)
+    {
+      console.log("name超长："+courses[i].name+"，长度为"+getStrLength(courses[i].name));
+      let tempStr=courses[i].name.substring(0,40)
+      console.log("裁剪后："+courses[i].name.substring(0,40)+"，长度为"+getStrLength(courses[i].name.substring(0,40)))
+      flag=1;
+    }
+    if(getStrLength(courses[i].position)>19)
+    {
+      console.log("positon超长："+courses[i].position+"，长度为"+getStrLength(courses[i].position));
+      let tempStr=courses[i].position;
+      tempStr.substring(0,19);
+      console.log("裁剪后："+tempStr.substring(0,12)+"，长度为"+getStrLength(tempStr.substring(0,12)))
+      flag=1;
+    }
+    if(getStrLength(courses[i].teacher)>19)
+    {
+      console.log("teacher超长："+courses[i].teacher+"，长度为"+getStrLength(courses[i].teacher));
+      let tempStr=courses[i].teacher.substring(0,19)
+      console.log("裁剪后："+tempStr+"，长度为"+getStrLength(tempStr))
+      flag=1;
+    }
+    if(flag==1){
+      console.log("出错课程为第"+i+1+"讲")
+    }
+  }
 
+}
+
+function getStrLength(str){ 
+  var len = 0; 
+  for (var i=0; i<str.length; i++) { 
+    if (str.charCodeAt(i)>127 || str.charCodeAt(i)==94) { 
+       len += 2; 
+     } else { 
+       len ++; 
+     } 
+   } 
+  return len; 
+}
